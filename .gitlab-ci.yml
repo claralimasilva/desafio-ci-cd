@@ -1,0 +1,52 @@
+# Define as fases (stages) da pipeline. Os jobs são executados na ordem das fases.
+stages:
+  - test
+  - build
+
+# Template de cache para dependências do Go.
+# Usado para evitar baixar as mesmas dependências em todos os jobs e pipelines.
+cache:
+  key:
+    files:
+      - go.sum # A chave do cache é o hash do arquivo go.sum. Se ele não mudar, o cache é reutilizado.
+  paths:
+    - .cache/go-mod/ # O diretório onde as dependências baixadas serão armazenadas em cache.
+  policy: pull-push # 'pull' para baixar o cache no início, 'push' para atualizar no final se o job for bem-sucedido.
+
+# Job de Lint e Testes
+lint-e-testes:
+  stage: test
+  image: golang:1.24 # Usa a imagem Docker oficial do Go 1.24 como ambiente de execução.
+
+  script:
+    # 1. Define o caminho do cache para os módulos Go.
+    - export GOMODCACHE=$CI_PROJECT_DIR/.cache/go-mod
+
+    # 2. Baixa as dependências. Será rápido se o cache for restaurado.
+    - go mod download
+
+    # 3. Instala e executa o golangci-lint.
+    - echo "Instalando golangci-lint v2.2.1..."
+    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.2.1
+    - $(go env GOPATH)/bin/golangci-lint run ./...
+
+    # 4. Executa os testes unitários.
+    - go test ./... -v
+
+# Job de Build
+build-da-aplicacao:
+  stage: build
+  image: golang:1.24
+
+  # A cláusula 'needs' garante que este job só execute se o job 'lint-e-testes'
+  # for concluído com sucesso. Ele também permite que os jobs executem em paralelo
+  # se estiverem na mesma fase, mas aqui define uma dependência explícita.
+  needs:
+    - lint-e-testes
+
+  script:
+    # 1. Define o caminho do cache para os módulos Go.
+    - export GOMODCACHE=$CI_PROJECT_DIR/.cache/go-mod
+
+    # 2. Compila a aplicação e gera o binário.
+    - go build -v -o ms-saudacoes-aleatorias .
