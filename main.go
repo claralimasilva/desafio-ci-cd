@@ -41,5 +41,5 @@ func main() {
 
 	// Inicia o servidor na porta 8080
 	// Você pode acessar em http://localhost:8080
-	router.Run(":8080")
+	router.Run(":8080") //nolint:forbidigo
 }
