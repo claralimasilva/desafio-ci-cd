@@ -29,6 +29,7 @@ run-tests:
   stage: test
   script:
     - echo "Running tests..."
+    - apk add --no-cache build-base gcc
     - CGO_ENABLED=1 go test -v ./... # O -v mostra o resultado de todos os testes
 
 # Job para construir a imagem Docker e enviá-la para o GitLab Container Registry
