@@ -52,7 +52,6 @@ build-and-push-image:
   services:
     - docker:28.3.1-dind
   before_script:
-    # Faz login no Docker Hub usando variáveis de ambiente seguras fornecidas pelo GitLab
     - echo "$DOCKER_PASS"
     - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
   script:
