@@ -9,12 +9,12 @@ stages:
   - build
   - deploy
 
-# Variáveis globais disponíveis para todos os jobs
+# Variáveis globais disponíveis para todas as tarefas da pipeline.
 variables:
-  # Define o nome da imagem Docker que será construída
-  IMAGE_NAME: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG
-  # Define a tag da imagem, usando o ID do commit para garantir unicidade
-  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+  # Define o nome da imagem Docker. Use seu usuário do Docker Hub.
+  DOCKER_IMAGE_NAME: $DOCKER_USER/ms-saudacoes-aleatorias
+  # Usa o SHA do commit como tag da imagem para garantir o versionamento.
+  DOCKER_IMAGE_TAG: $CI_COMMIT_SHORT_SHA
 
 # Job para verificar formatação e erros comuns no código Go
 lint-code:
@@ -23,6 +23,15 @@ lint-code:
     - echo "Linting code..."
     - go fmt $(go list ./...)
     - go vet $(go list ./...)
+
+golangci-lint:
+  stage: lint
+  # Usa a imagem oficial do golangci-lint.
+  image: golangci/golangci-lint:v2.2-alpine
+  script:
+    - echo "Executando linter no código..."
+    # Executa o linter. O cache é limpo para garantir uma verificação completa.
+    - golangci-lint run --verbose
 
 # Job para executar os testes da aplicação
 run-tests:
@@ -36,21 +45,20 @@ run-tests:
 build-and-push-image:
   stage: build
   # Usa a imagem oficial do Docker para executar comandos docker
-  image: docker:24.0.5
+  image: docker:28.3.1
   # Requer que o serviço Docker-in-Docker esteja disponível
   services:
-    - docker:24.0.5-dind
+    - docker:28.3.1-dind
   before_script:
     # Faz login no GitLab Container Registry usando variáveis de ambiente seguras fornecidas pelo GitLab
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
   script:
-    - echo "Building Docker image..."
-    # Constrói a imagem usando o Dockerfile do projeto
-    # O Dockerfile já está otimizado com multi-stage build
-    - docker build -t "$IMAGE_NAME:$IMAGE_TAG" .
-    - echo "Pushing Docker image to GitLab Registry..."
-    # Envia a imagem construída para o registry
-    - docker push "$IMAGE_NAME:$IMAGE_TAG"
+    - echo "Construindo a imagem Docker..."
+    # Constrói a imagem Docker usando o Dockerfile da aplicação.
+    - docker build -t "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG" .
+    - echo "Enviando a imagem para o Docker Hub..."
+    # Envia a imagem construída para o repositório do Docker Hub.
+    - docker push "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG"
 
 # Job para acionar o deploy no Render
 deploy-to-render:
