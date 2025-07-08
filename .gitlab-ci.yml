@@ -15,6 +15,8 @@ variables:
   DOCKER_IMAGE_NAME: $DOCKER_USER/ms-saudacoes-aleatorias
   # Usa o SHA do commit como tag da imagem para garantir o versionamento.
   DOCKER_IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+  DOCKER_USER: $DOCKER_USER
+  DOCKER_PASS: $DOCKER_PASS
 
 # Job para verificar formatação e erros comuns no código Go
 lint-code:
