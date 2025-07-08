@@ -12,11 +12,11 @@ stages:
 # Variáveis globais disponíveis para todas as tarefas da pipeline.
 variables:
   # Define o nome da imagem Docker. Use seu usuário do Docker Hub.
+  DOCKER_USER: taotreinatec
+  DOCKER_PASS: $DOCKER_PASS
   DOCKER_IMAGE_NAME: $DOCKER_USER/ms-saudacoes-aleatorias
   # Usa o SHA do commit como tag da imagem para garantir o versionamento.
   DOCKER_IMAGE_TAG: $CI_COMMIT_SHORT_SHA
-  DOCKER_USER: $DOCKER_USER
-  DOCKER_PASS: $DOCKER_PASS
 
 # Job para verificar formatação e erros comuns no código Go
 lint-code:
