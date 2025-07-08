@@ -1,52 +1,66 @@
-# Define as fases (stages) da pipeline. Os jobs são executados na ordem das fases.
+# Define a imagem Docker padrão para todos os jobs da pipeline
+default:
+  image: golang:1.24-alpine
+
+# Define os estágios da pipeline. Os jobs são executados na ordem dos estágios.
 stages:
+  - lint
   - test
   - build
+  - deploy
 
-# Template de cache para dependências do Go.
-# Usado para evitar baixar as mesmas dependências em todos os jobs e pipelines.
-cache:
-  key:
-    files:
-      - go.sum # A chave do cache é o hash do arquivo go.sum. Se ele não mudar, o cache é reutilizado.
-  paths:
-    - .cache/go-mod/ # O diretório onde as dependências baixadas serão armazenadas em cache.
-  policy: pull-push # 'pull' para baixar o cache no início, 'push' para atualizar no final se o job for bem-sucedido.
+# Variáveis globais disponíveis para todos os jobs
+variables:
+  # Define o nome da imagem Docker que será construída
+  IMAGE_NAME: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG
+  # Define a tag da imagem, usando o ID do commit para garantir unicidade
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
 
-# Job de Lint e Testes
-lint-e-testes:
+# Job para verificar formatação e erros comuns no código Go
+lint-code:
+  stage: lint
+  script:
+    - echo "Linting code..."
+    - go fmt $(go list ./...)
+    - go vet $(go list ./...)
+
+# Job para executar os testes da aplicação
+run-tests:
   stage: test
-  image: golang:1.24 # Usa a imagem Docker oficial do Go 1.24 como ambiente de execução.
-
   script:
-    # 1. Define o caminho do cache para os módulos Go.
-    - export GOMODCACHE=$CI_PROJECT_DIR/.cache/go-mod
+    - echo "Running tests..."
+    - go test -v ./... # O -v mostra o resultado de todos os testes
 
-    # 2. Baixa as dependências. Será rápido se o cache for restaurado.
-    - go mod download
-
-    # 3. Instala e executa o golangci-lint.
-    - echo "Instalando golangci-lint v2.2.1..."
-    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.2.1
-    - $(go env GOPATH)/bin/golangci-lint run ./...
-
-    # 4. Executa os testes unitários.
-    - go test ./... -v
-
-# Job de Build
-build-da-aplicacao:
+# Job para construir a imagem Docker e enviá-la para o GitLab Container Registry
+build-and-push-image:
   stage: build
-  image: golang:1.24
-
-  # A cláusula 'needs' garante que este job só execute se o job 'lint-e-testes'
-  # for concluído com sucesso. Ele também permite que os jobs executem em paralelo
-  # se estiverem na mesma fase, mas aqui define uma dependência explícita.
-  needs:
-    - lint-e-testes
-
+  # Usa a imagem oficial do Docker para executar comandos docker
+  image: docker:24.0.5
+  # Requer que o serviço Docker-in-Docker esteja disponível
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    # Faz login no GitLab Container Registry usando variáveis de ambiente seguras fornecidas pelo GitLab
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    # 1. Define o caminho do cache para os módulos Go.
-    - export GOMODCACHE=$CI_PROJECT_DIR/.cache/go-mod
+    - echo "Building Docker image..."
+    # Constrói a imagem usando o Dockerfile do projeto
+    # O Dockerfile já está otimizado com multi-stage build
+    - docker build -t "$IMAGE_NAME:$IMAGE_TAG" .
+    - echo "Pushing Docker image to GitLab Registry..."
+    # Envia a imagem construída para o registry
+    - docker push "$IMAGE_NAME:$IMAGE_TAG"
 
-    # 2. Compila a aplicação e gera o binário.
-    - go build -v -o ms-saudacoes-aleatorias .
+# Job para acionar o deploy no Render
+deploy-to-render:
+  stage: deploy
+  # Usa uma imagem leve com cURL para fazer a chamada ao deploy hook
+  image: curlimages/curl:latest
+  script:
+    - echo "Triggering deployment on Render..."
+    # Executa a chamada para o Deploy Hook do Render.
+    # A URL do hook deve ser configurada como uma variável de ambiente no GitLab.
+    - 'curl -X POST "$RENDER_DEPLOY_HOOK_URL"'
+  # Este job só deve ser executado na branch 'main'
+  only:
+    - main
