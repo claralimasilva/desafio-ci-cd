@@ -27,11 +27,9 @@ lint-code:
 # Job para executar os testes da aplicação
 run-tests:
   stage: test
-  environment:
-    CGO_ENABLED: "1"
   script:
     - echo "Running tests..."
-    - go test -v ./... # O -v mostra o resultado de todos os testes
+    - CGO_ENABLED=1 go test -v ./... # O -v mostra o resultado de todos os testes
 
 # Job para construir a imagem Docker e enviá-la para o GitLab Container Registry
 build-and-push-image:
