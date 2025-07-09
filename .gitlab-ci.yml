@@ -51,7 +51,6 @@ build-and-push-image:
   services:
     - docker:28.3.1-dind
   before_script:
-    - echo "$DOCKER_PASS"
     - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
   script:
     - echo "Construindo a imagem Docker..."
