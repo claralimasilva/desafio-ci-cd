@@ -47,20 +47,20 @@ build-and-push-image:
   stage: build
   tags:
     - gitlab-org-docker
+  variables:
+    BUILDAH_FORMAT: docker
+    STORAGE_DRIVER: vfs
   # Usa a imagem oficial do Docker para executar comandos docker
-  image: docker:24.0.5
-  # Requer que o serviço Docker-in-Docker esteja disponível
-  services:
-    - docker:24.0.5-dind
+  image: quay.io/buildah/stable
   before_script:
-    - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+    - echo "$DOCKER_PASS" | buildah login -u "$DOCKER_USER" --password-stdin
   script:
     - echo "Construindo a imagem Docker..."
     # Constrói a imagem Docker usando o Dockerfile da aplicação.
-    - docker build -t "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG" .
+    - buildah build -t "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG" .
     - echo "Enviando a imagem para o Docker Hub..."
     # Envia a imagem construída para o repositório do Docker Hub.
-    - docker push "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG"
+    - buildah push "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG"
 
 # Job para acionar o deploy no Render
 deploy-to-render:
