@@ -14,6 +14,7 @@ variables:
   # Define o nome da imagem Docker. Use seu usuário do Docker Hub.
   DOCKER_USER: taotreinatec
   DOCKER_IMAGE_NAME: $DOCKER_USER/ms-saudacoes-aleatorias
+  DOCKER_REGISTRY: registry.hub.docker.com
   # Usa o SHA do commit como tag da imagem para garantir o versionamento.
   DOCKER_IMAGE_TAG: $CI_COMMIT_SHORT_SHA
 
@@ -53,7 +54,7 @@ build-and-push-image:
   # Usa a imagem oficial do Docker para executar comandos docker
   image: quay.io/buildah/stable
   before_script:
-    - echo "$DOCKER_PASS" | buildah login -u "$DOCKER_USER" --password-stdin docker.io
+    - echo "$DOCKER_PASS" | buildah login -u "$DOCKER_USER" --password-stdin $DOCKER_REGISTRY
   script:
     - echo "Construindo a imagem Docker..."
     # Constrói a imagem Docker usando o Dockerfile da aplicação.
