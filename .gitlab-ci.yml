@@ -54,7 +54,7 @@ build-and-push-image:
   services:
     - docker:24.0.5-dind
   before_script:
-    - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+    - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin $DOCKER_REGISTRY
   script:
     - echo "Construindo a imagem Docker..."
     # Constrói a imagem Docker usando o Dockerfile da aplicação.
