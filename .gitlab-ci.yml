@@ -53,7 +53,7 @@ build-and-push-image:
   # Usa a imagem oficial do Docker para executar comandos docker
   image: quay.io/buildah/stable
   before_script:
-    - echo "$DOCKER_PASS" | buildah login -u "$DOCKER_USER" --password-stdin
+    - echo "$DOCKER_PASS" | buildah login -u "$DOCKER_USER" --password-stdin registry.docker.io
   script:
     - echo "Construindo a imagem Docker..."
     # Constrói a imagem Docker usando o Dockerfile da aplicação.
