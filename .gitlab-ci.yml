@@ -4,21 +4,22 @@ default:
 
 # Define os estágios da pipeline. Os jobs são executados na ordem dos estágios.
 stages:
-  - lint
+  - build-lint
   - test
-  - build
+  - release
+  - package
   - deploy
 
 # Job para verificar formatação e erros comuns no código Go
 lint-code:
-  stage: lint
+  stage: build-lint
   script:
     - echo "Linting code..."
     - go fmt $(go list ./...)
     - go vet $(go list ./...)
 
 golangci-lint:
-  stage: lint
+  stage: build-lint
   # Usa a imagem oficial do golangci-lint.
   image: golangci/golangci-lint:v2.2-alpine
   script:
@@ -46,7 +47,7 @@ release-job:
 
 # Job para construir a imagem Docker e enviá-la para o Docker Hub
 build-and-push-image:
-  stage: build
+  stage: package
   variables:
     DOCKER_USER: taotreinatec
     DOCKER_PASS: $DOCKER_PASS
