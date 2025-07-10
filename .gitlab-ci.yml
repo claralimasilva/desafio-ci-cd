@@ -36,19 +36,13 @@ golangci-lint:
     # Executa o linter. O cache é limpo para garantir uma verificação completa.
     - golangci-lint run --verbose
 
-# Job para executar os testes da aplicação
-run-tests:
+run-test-report:
   stage: test
   script:
-    - echo "Running tests..."
+    - echo "Rodando testes e gerando report..."
     - apk add --no-cache build-base gcc
-    - CGO_ENABLED=1 go test -v ./... # O -v mostra o resultado de todos os testes
-
-test-report:
-  stage: test
-  script:
     - go install gotest.tools/gotestsum@latest
-    - gotestsum --junitfile report.xml --format testname
+    - CGO_ENABLED=1 gotestsum --junitfile report.xml --format testname
   artifacts:
     when: always
     reports:
@@ -88,8 +82,8 @@ deploy-to-staging:
   image:
     name: hashicorp/terraform:latest
     entrypoint:
-      - '/usr/bin/env'
-      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+      - "/usr/bin/env"
+      - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   before_script:
     - cd infra
     - terraform init
