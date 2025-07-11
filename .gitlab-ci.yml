@@ -27,6 +27,9 @@ lint-code:
     - echo "Linting code..."
     - go fmt $(go list ./...)
     - go vet $(go list ./...)
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main"
+      when: never
 
 golangci-lint:
   stage: build-lint
@@ -86,12 +89,11 @@ deploy-to-staging:
   variables:
     TF_VAR_docker_image_name: $DOCKER_IMAGE_NAME
     TF_VAR_docker_image_tag: $DOCKER_IMAGE_TAG
+    TF_VAR_coolify_token: $COOLIFY_TOKEN
   before_script:
     - terraform init
     - terraform validate
   script:
-    - export COOLIFY_TOKEN=$COOLIFY_TOKEN
-    - echo "🚀 Acionando deploy no Coolify..."
     - terraform apply -auto-approve
   only:
     - main
