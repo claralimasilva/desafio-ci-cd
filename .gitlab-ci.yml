@@ -4,6 +4,7 @@ default:
 
 # Define os estágios da pipeline. Os jobs são executados na ordem dos estágios.
 stages:
+  - prepare
   - build-lint
   - test
   - release
