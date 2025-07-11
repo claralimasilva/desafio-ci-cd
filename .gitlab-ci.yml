@@ -36,6 +36,9 @@ golangci-lint:
     - echo "Executando linter no código..."
     # Executa o linter. O cache é limpo para garantir uma verificação completa.
     - golangci-lint run --verbose
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main"
+      when: never
 
 run-tests:
   stage: test
@@ -48,6 +51,9 @@ run-tests:
     when: always
     reports:
       junit: report.xml
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main"
+      when: never
 
 # Job para construir a imagem Docker e enviá-la para o Docker Hub
 build-and-push-image:
