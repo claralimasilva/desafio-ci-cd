@@ -56,7 +56,7 @@ run-tests:
       junit: report.xml
   rules:
     - if: $CI_COMMIT_BRANCH != "main"
-      when: never
+      when: always
 
 # Job para construir a imagem Docker e enviá-la para o Docker Hub
 build-and-push-image:
