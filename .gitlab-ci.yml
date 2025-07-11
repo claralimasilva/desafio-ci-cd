@@ -4,7 +4,6 @@ default:
 
 # Define os estágios da pipeline. Os jobs são executados na ordem dos estágios.
 stages:
-  - prepare
   - build-lint
   - test
   - release
@@ -20,27 +19,6 @@ variables:
   RENDER_API_KEY: $RENDER_API_KEY
   SERVICE_NAME: saudacoes-aleatorias
   GOPATH: "$CI_PROJECT_DIR/.go"
-
-cache:
-  key:
-    files:
-      - go.sum
-  paths:
-    - .go/pkg/mod
-  # A política padrão é 'pull'. Jobs irão baixar o cache, mas não o atualizarão.
-  policy: pull
-
-download-deps:
-  stage: prepare
-  # Recomenda-se usar uma imagem Go específica.
-  script:
-    - echo "Baixando Go modules..."
-    # O comando 'go mod download' baixa as dependências listadas no go.mod.
-    - go mod download
-  cache:
-    # Sobrescreve a política de cache para 'push'.
-    # Este job irá criar e fazer o upload do cache para os próximos jobs usarem.
-    policy: push
 
 # Job para verificar formatação e erros comuns no código Go
 lint-code:
