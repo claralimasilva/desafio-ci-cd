@@ -135,8 +135,10 @@ destroy-staging:
     - echo "Destruindo a infraestrutura de staging..."
     - terraform destroy -auto-approve
   when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
   dependencies:
     - deploy-to-staging
-  only:
-    - main
+
   
