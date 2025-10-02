@@ -51,7 +51,6 @@ jobs:
         # A imagem ubuntu-latest já tem o gcc.
         CGO_ENABLED=1 gotestsum --junitfile report.xml --format testname
 
-
   build:
     name: Build Code
     runs-on: ubuntu-latest
