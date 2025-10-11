@@ -81,7 +81,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         env:
-          DOCKER_IMAGE_NAME: ${{ env.DOCKER_USER }}/ms-saudacoes-aleatorias
+          DOCKER_IMAGE_NAME: ${{ env.DOCKER_USER }}/ms-${{ env.SERVICE_NAME}}
           DOCKER_IMAGE_TAG: 1.0.${{ github.run_id }}
         with:
           context: .
