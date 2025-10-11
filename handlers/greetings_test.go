@@ -32,7 +32,7 @@ func setupTestDB(t *testing.T) {
 	database.DB = db
 
 	// Insere um dado de teste
-	initialGreeting := models.Greeting{Text: "Teste Inicial"}
+	initialGreeting := models.Greeting{Text: "Olá, Mundo dos Testes!"}
 	if err := database.DB.Create(&initialGreeting).Error; err != nil {
 		t.Fatalf("Falha ao inserir dado de teste: %v", err)
 	}
