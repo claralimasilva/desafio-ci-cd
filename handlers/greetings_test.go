@@ -110,7 +110,7 @@ func TestGetRandomGreeting(t *testing.T) {
 	}
 
 	// Como só temos uma saudação no banco de teste, a resposta deve ser ela
-	if saudacao, ok := response["saudação"]; !ok || saudacao != "Teste Inicial" {
-		t.Errorf("Esperava a saudação 'Teste Inicial', mas obteve '%s'", saudacao)
+	if saudacao, ok := response["saudação"]; !ok || saudacao != "Olá, Mundo dos Testes!" {
+		t.Errorf("Esperava a saudação 'Olá, Mundo dos Testes!', mas obteve '%s'", saudacao)
 	}
 }
