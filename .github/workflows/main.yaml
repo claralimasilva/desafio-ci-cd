@@ -8,6 +8,12 @@ on:
     branches:
       - main
 
+env:
+  DOCKER_USER: ozorest
+  DOCKER_IMAGE_NAME: ${{ vars.DOCKER_USER }}/ms-saudacoes-aleatorias
+  DOCKER_IMAGE_TAG: 1.0.${{ github.run_id }}
+  SERVICE_NAME: saudacoes-aleatorias
+
 jobs:
   lint:
     name: Lint Code
@@ -50,18 +56,36 @@ jobs:
           # A imagem ubuntu-latest já tem o gcc.
           CGO_ENABLED=1 gotestsum --junitfile report.xml --format testname
 
-  build:
-    name: Build Code
+  build-and-push:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    needs:
-      - lint
-      - test
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        # Essencial para builds multi-plataforma (ex: ARM em runners x86)
 
-      - name: Build app
-        run: go build main.go
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        # Cria um builder do Docker que suporta builds multi-plataforma
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }} # Segredo configurado no GitHub
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
+            ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.DOCKER_IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
