@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  DOCKER_USER: ozorest
+  DOCKER_USER: ozorest84
   DOCKER_IMAGE_NAME: ${{ vars.DOCKER_USER }}/ms-saudacoes-aleatorias
   DOCKER_IMAGE_TAG: 1.0.${{ github.run_id }}
   SERVICE_NAME: saudacoes-aleatorias
