@@ -94,7 +94,8 @@ jobs:
           service-name: ${{ env.KOYEB_SERVICE }}
           docker: docker.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-          service-ports: 'server:8080'
+          service-ports: '8080:http'
+          service-routes: '/'
 
     environment:
       name: production
