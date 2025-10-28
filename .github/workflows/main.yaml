@@ -82,13 +82,21 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
+      - name: Install and configure the Koyeb CLI
+        uses: koyeb-community/koyeb-actions@v2
+        with:
+          api_token: ${{ secrets.KOYEB_TOKEN }}
+
       - name: Deploy to Koyeb
         uses: koyeb/action-git-deploy@v1
         with:
-          api_token: ${{ secrets.KOYEB_TOKEN }}
-          app_name: ${{ env.KOYEB_APP }}
-          service_name: ${{ env.KOYEB_SERVICE }}
-          docker_image: docker.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          app-name: ${{ env.KOYEB_APP }}
+          service-name: ${{ env.KOYEB_SERVICE }}
+          docker: docker.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+          # ajuste a porta se a sua app Go escuta em outra
+          service-ports: '[{"port":8080,"protocol":"http"}]'
+          service-routes: '[{"path":"/","port":8080,"protocol":"http"}]'
 
     environment:
       name: production
@@ -100,16 +108,14 @@ jobs:
     needs: deploy
     environment:
       name: cleanup
+      # configure o environment cleanup nas settings pra exigir aprovação
     steps:
-      - name: Instalar Koyeb CLI
-        run: |
-          curl -fsSL https://www.koyeb.com/install.sh | bash
-          echo "${{ secrets.KOYEB_TOKEN }}" | /root/.koyeb/bin/koyeb login --token -
+      - name: Install and configure the Koyeb CLI
+        uses: koyeb-community/koyeb-actions@v2
+        with:
+          api_token: ${{ secrets.KOYEB_TOKEN }}
 
-      - name: Remover serviço do Koyeb
-        run: |
-          /root/.koyeb/bin/koyeb service delete "${{ env.KOYEB_APP }}/${{ env.KOYEB_SERVICE }}" --yes || true
-
-      - name: Remover app do Koyeb
-        run: |
-          /root/.koyeb/bin/koyeb app delete "${{ env.KOYEB_APP }}" --yes || true
+      - name: Remover app/serviço do Koyeb
+        uses: koyeb/action-git-deploy/cleanup@v1
+        with:
+          app-name: ${{ env.KOYEB_APP }}
