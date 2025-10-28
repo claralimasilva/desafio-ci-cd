@@ -92,10 +92,13 @@ jobs:
         with:
           app-name: ${{ env.KOYEB_APP }}
           service-name: ${{ env.KOYEB_SERVICE }}
+
           docker: docker.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
           service-ports: '8080:http'
+
           service-routes: '/:8080'
+
           service-checks: '8080:http:/api/saudacoes/aleatorio'
 
     environment:
@@ -108,6 +111,7 @@ jobs:
     needs: deploy
     environment:
       name: cleanup
+
     steps:
       - name: Install and configure the Koyeb CLI
         uses: koyeb-community/koyeb-actions@v2
