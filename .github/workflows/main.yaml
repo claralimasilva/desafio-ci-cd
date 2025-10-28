@@ -95,7 +95,7 @@ jobs:
           docker: docker.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
           service-ports: '8080:http'
-          service-routes: '/'
+          service-routes: '/:8080'
 
     environment:
       name: production
