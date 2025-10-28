@@ -103,7 +103,6 @@ jobs:
 
     environment:
       name: production
-      url: https://${{ env.KOYEB_SERVICE }}-${{ env.KOYEB_APP }}.koyeb.app
 
   cleanup:
     name: Cleanup Koyeb (manual)
